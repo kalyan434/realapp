@@ -1,0 +1,2475 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/template/CSXTemplate.xhtml">
+ 
+	<ui:define name="webPageTitle">
+#{label.title_new_bid}#{' '}#{label.bid_symbol_hash}#{bidHandler.bidDetails.getBidNumberFormatted()}
+                </ui:define>
+	<ui:define name="pageName"></ui:define>
+	<ui:define name="pageContent">
+		<script type="text/javascript">
+                /* <![CDATA[ */
+                
+                function isNumber(event) {
+
+          if (event) {
+          var charCode = (event.which) ? event.which : event.keyCode;
+          if (charCode < 48 || charCode > 57) 
+          return false;
+          }
+          return true;
+          } 
+          
+     function start() {
+                                                    PF('statusDialog').show();
+                                                }
+                                                                                                
+                  function stop() {
+                                                    PF('statusDialog').hide();
+                                                }
+                  
+                  function setSelBeanId(bid){
+                                  document.getElementById("formId:beaneId").value = bid;
+                                  document.getElementById("formId:exportExl").click();
+                  }
+                  
+                  function test(){
+                  alert('test');
+                  testCurrent();
+                  }
+                
+                  
+                /* ]]> */
+
+
+</script>
+
+		<h:form id="bidDetailsForm" prependId="false" style="height:100%">
+			<!-- <script type="text/javascript">
+                function pageLoading(){ 
+                                $('#status').fadeOut();// will first fade out the loading animation 
+                $('#preloader').delay(350).fadeOut('slow'); // will fade out the white DIV that covers the website.
+}; 
+</script>
+         
+<div id="preloader">
+                <div id="status" > Loading...</div>
+</div> -->
+			<p:defaultCommand target="dummy" />
+			<p:remoteCommand name="updateBidDetailsForm"
+				update=":bidDetailsForm:lane-details-slider"></p:remoteCommand>
+			<p:commandButton id="dummy" process="@none" global="false"
+				style="display:none;" />
+			<p:outputPanel id="container-top-bar"
+				styleClass="container-search-filter-bar container-search-filter-bar-bottom-margin ">
+
+				<span class="bid-no">#{label.bid_nummber}<p:outputLabel
+						id="bid-number-text" styleClass="bid-number"
+						value="#{bidHandler.bidDetails.bidNumber}"
+						rendered="#{bidHandler.showDownloadExcelOption}">
+						<!-- <f:convertNumber pattern="#0000" /> -->
+					</p:outputLabel></span>
+
+
+				<p:outputLabel id="seperator-1" styleClass="seperator"
+					value="#{label.bid_column}" />
+				<span class="bid-bco">#{label.bid_bco}#{bidHandler.bidDetails.selectedBCO}
+				</span>
+				<p:outputLabel id="seperator-2" styleClass="seperator"
+					value="#{label.bid_column}" />
+				<span class="bid-IMC">#{label.bid_imc}
+					#{bidHandler.bidDetails.selectedIMC}</span>
+				<!-- <p:outputLabel id="seperator-3" styleClass="seperator"
+                                                                                value="#{label.bid_column}" /> -->
+
+
+				<p:outputPanel styleClass="actions">
+					<p:outputPanel styleClass="add-up-down-btns"
+						rendered="#{bidHandler.showNewRound}">
+						<p:commandButton styleClass="uploadBtn" title="Upload feedback"
+							id="uploadBtn" disabled="#{bidHandler.disableBidFields}"
+							onclick="uploadFb();" icon="false"
+							oncomplete="document.getElementById('uploadformId:upload-fb-cncl-btn').focus()">
+						</p:commandButton>
+					</p:outputPanel>
+
+					<p:outputPanel styleClass="add-up-down-btns" id="add_down_panel">
+						<p:commandButton styleClass="downloadBtn"
+							title="Download bid report" id="downloadBtn" ajax="false"
+							rendered="#{bidHandler.showDownloadExcelOption}"
+							disabled="#{bidHandler.disableBidFields}"
+							actionListener="#{bidHandler.downloadExcel}" icon="false">
+						</p:commandButton>
+					</p:outputPanel>
+
+					<p:outputPanel styleClass="add-up-down-btns">
+						<p:commandButton id="add-lanes" title="Add lanes"
+							styleClass="add-lanes" icon="ui-icon-plusthick"
+							rendered="#{bidHandler.showDownloadExcelOption and userBean.pricingManager}"
+							disabled="#{bidHandler.disableBidFields}"
+							actionListener="#{bidHandler.initLanes()}"
+							oncomplete="PF('addLanes').show();" update="@(.lane-form)"></p:commandButton>
+					</p:outputPanel>
+
+					<p:outputPanel styleClass="rev-offer"
+						rendered="#{bidHandler.showNewRound}">
+						<p:selectBooleanCheckbox id="revision-offer"
+							value="#{bidHandler.bidDetails.revOffer}"
+							styleClass="revision-offer">
+							<p:ajax event="change" update="@this" />
+						</p:selectBooleanCheckbox>
+						<p:outputLabel id="rev-offer">#{label.bid_rev_offer}</p:outputLabel>
+					</p:outputPanel>
+					<!-- <p:commandButton id="save-and-close-bid"
+                                                                                                styleClass="save-and-close  ui-priority-primary" value="#{label.bid_save}"
+                                                                                                actionListener="#{bidHandler.saveBidDetails}"
+                                                                                                update="bidDetailsForm:lane-message-id bidDetailsForm:container-top-bar bid
+                                                                                                DetailsForm:add_down_panel"
+                                                                                                rendered="#{bidHandler.saveButton}">
+                                                                                </p:commandButton> -->
+
+					<!--         <p:commandButton id="save-bid"
+                                                                                                styleClass="save-and-close  ui-priority-primary" value="Save"
+                                                                                                actionListener="#{bidHandler.saveBidDetails}"
+                                                                                                update="bidDetailsForm:lane-message-id bidDetailsForm:container-top-bar bidDetailsForm:add_down_panel"
+                                                                                                rendered="#{bidHandler.showDownloadExcelOption}">
+                                                                                </p:commandButton> -->
+
+					<p:splitButton id="save-and-close-bid"
+						styleClass="save-and-close noBorderBT"
+						rendered="#{bidHandler.saveButton}" value="#{label.bid_save}"
+						actionListener="#{bidHandler.saveBidDetails}" process="@this"
+						update="bidDetailsForm:lane-details-slider bidDetailsForm:lane-message-id bidDetailsForm:container-top-bar bidDetailsForm:add_down_panel bidDetailsForm:req_core_vol bidDetailsForm:req_if_vol bidDetailsForm:total_volume bidDetailsForm:bid-number-text-o bidDetailsForm:create-bid-offer-box bidDetailsForm:container-search-filter-bar-overlay">
+						<p:menuitem id="menu-save-close" styleClass="menu-save-close"
+							action="#{bidHandler.releaseBCoLock}"
+							value="#{label.bid_save_close}">
+						</p:menuitem>
+					</p:splitButton>
+
+					<p:splitButton id="save-close-bid"
+						styleClass="save-and-close noBorderBT floatLeft"
+						rendered="#{bidHandler.showDownloadExcelOption and userBean.pricingManager}"
+						value="Save" actionListener="#{bidHandler.saveBidDetails}"
+						process="@this"
+						update="bidDetailsForm:lane-details-slider bidDetailsForm:lane-message-id bidDetailsForm:container-top-bar bidDetailsForm:add_down_panel bidDetailsForm:req_core_vol bidDetailsForm:req_if_vol bidDetailsForm:total_volume bidDetailsForm:create-bid-offer-box bidDetailsForm:terms-and-cond-edit bidDetailsForm:container-search-filter-bar-overlay">
+						<p:menuitem id="menu-save-close-new" styleClass="menu-save-close"
+							action="#{bidHandler.releaseBCoLock}"
+							value="#{label.bid_save_close}">
+						</p:menuitem>
+					</p:splitButton>
+
+
+					<p:splitButton id="create-bid-offer"
+						rendered="#{bidHandler.showDownloadExcelOption and userBean.pricingManager}"
+						disabled="#{bidHandler.disableBidFields}"
+						actionListener="#{bidHandler.resetExpiryDate()}"
+						update="@this bidDetailsForm:create-bid-offer-table bidDetailsForm:create-bid-offer-box bidDetailsForm:terms-and-cond-edit"
+						styleClass="create-bid-offer" value="#{label.bid_create_offer}"
+						process="@this">
+						<p:menuitem id="award-lanes-btn" styleClass="award-lanes-btn"
+							disabled="#{bidHandler.disableAwardLanes}"
+							update="bidDetailsForm:award-lanes-dialog"
+							oncomplete="awardLanes();" value="Award Lanes" process="@this">
+						</p:menuitem>
+					</p:splitButton>
+				</p:outputPanel>
+			</p:outputPanel>
+			<div class="clear"></div>
+
+			<!-- Filter Section Starts -->
+			<p:outputPanel id="container-search-filter"
+				styleClass="add-filter-overlay">
+
+				<p:outputPanel styleClass="container-search-filter-bar-overlay"
+					id="container-search-filter-bar-overlay">
+					<b class="pull-left total-lanes"><p:outputLabel
+							id="total-lane-count"
+							value="#{bidHandler.bidDetails.laneDetails.size()}"></p:outputLabel>
+						total lanes</b>
+					<p:outputPanel id="add-filter-result"
+						styleClass="add-filter-result"
+						rendered="#{not(bidHandler.showEditFilterBtn)}">
+						<p:commandLink styleClass="add-bid-filter-btn"
+							id="add-bid-filter-btn" value="#{label.bid_filter_add_btn}">
+						</p:commandLink>
+					</p:outputPanel>
+
+					<p:outputPanel id="edit-filter-result"
+						styleClass="edit-filter-result"
+						rendered="#{bidHandler.showEditFilterBtn}">
+						<p:commandLink styleClass="edit-filter-btn" id="edit-filter-btn"
+							value="#{label.bid_filter_edit_btn}" />
+						<p:commandLink styleClass="reset-filter-btn" id="reset-filter-btn"
+							actionListener="#{bidHandler.resetFilter()}"
+							value="#{label.bid_filter_reset_btn}" update="@form"
+							oncomplete="resetCarousalPage()" />
+					</p:outputPanel>
+
+				</p:outputPanel>
+				<p:overlayPanel styleClass="filter-panel" showCloseIcon="true"
+					widgetVar="filterPanelWar" onShow="displayFilters();"
+					id="filterPanel" for="@(.add-bid-filter-btn),@(.edit-filter-btn)"
+					showEffect="blind" onHide="displayFilters();">
+
+					<p:panelGrid id="filter-panel-grid" styleClass="filter-panel-grid">
+
+						<p:column styleClass="noMarginTop">
+							<p:outputLabel>
+								<b>Sort By</b>
+							</p:outputLabel>
+							<p:selectOneRadio id="sortby"
+								value="#{bidHandler.filterBean.sortBy}" layout="grid"
+								columns="1">
+								<f:selectItems value="#{bidHandler.filterBean.sortByList}"
+									var="sortBy" itemLabel="#{sortBy}" itemValue="#{sortBy}" />
+							</p:selectOneRadio>
+						</p:column>
+						<p:column styleClass="noMarginTop">
+							<p:outputLabel>
+								<b>Lane View</b>
+
+							</p:outputLabel>
+
+							<p:selectOneRadio value="#{bidHandler.filterBean.imcView}"
+								id="imcView" layout="grid" columns="1">
+								<f:selectItems value="#{bidHandler.filterBean.imcViewList}"
+									var="imcView" itemLabel="#{imcView}" itemValue="#{imcView}" />
+							</p:selectOneRadio>
+						</p:column>
+						<p:column>
+							<p:outputLabel>
+								<b>Renewal View</b>
+
+							</p:outputLabel>
+
+							<p:selectOneRadio value="#{bidHandler.filterBean.renewalView}"
+								id="renewalView" layout="grid" columns="1">
+								<f:selectItems value="#{bidHandler.filterBean.renewalList}"
+									var="renewalView" itemLabel="#{renewalView}"
+									itemValue="#{renewalView}" />
+							</p:selectOneRadio>
+						</p:column>
+
+						<p:column>
+							<p:outputLabel>
+								<b>Competing View</b>
+
+							</p:outputLabel>
+
+							<p:selectOneRadio value="#{bidHandler.filterBean.competingView}"
+								id="competingView" layout="grid" columns="1">
+								<f:selectItems value="#{bidHandler.filterBean.competingList}"
+									var="competingView" itemLabel="#{competingView}"
+									itemValue="#{competingView}" />
+							</p:selectOneRadio>
+						</p:column>
+						<p:column>
+							<p:outputLabel>
+								<b>Lane Type</b>
+							</p:outputLabel>
+							<p:selectManyCheckbox id="laneType"
+								value="#{bidHandler.filterBean.selectedLaneType}" layout="grid"
+								columns="1">
+								<f:selectItems value="#{bidHandler.filterBean.laneTypeList}"
+									var="laneType" itemLabel="#{laneType}" itemValue="#{laneType}" />
+							</p:selectManyCheckbox>
+						</p:column>
+						<p:column>
+							<p:outputLabel>
+								<b>Lane Status</b>
+							</p:outputLabel>
+							<p:selectManyCheckbox id="laneStatus"
+								value="#{bidHandler.filterBean.selectedLaneStatus}"
+								layout="grid" columns="1">
+								<f:selectItems value="#{bidHandler.filterBean.laneStatusList}"
+									var="laneStatus" itemLabel="#{laneStatus}"
+									itemValue="#{laneStatus}" />
+							</p:selectManyCheckbox>
+						</p:column>
+						<p:column>
+							<p:outputPanel styleClass="origi-desti-metro">
+								<p:outputLabel>
+									<b>Origin</b>
+								</p:outputLabel>
+								<!-- <p:inputText id="origin-filter"
+                                                                                                                                                value="#{bidHandler.filterBean.origin}"></p:inputText> -->
+								<p:autoComplete placeholder="Origin"
+									completeMethod="#{bidHandler.filteredOriginList}"
+									value="#{bidHandler.filterBean.origin}"
+									style="background-color:transparent!important;" maxResults="5"
+									minQueryLength="1">
+									<p:ajax event="itemSelect"></p:ajax>
+									<p:ajax event="change"></p:ajax>
+								</p:autoComplete>
+
+							</p:outputPanel>
+							<p:outputPanel styleClass="origi-desti-metro">
+								<p:outputLabel>
+									<b>Destination</b>
+								</p:outputLabel>
+								<!-- <p:inputText id="destination-filter"
+                                                                                                                                                value="#{bidHandler.filterBean.destination}"></p:inputText> -->
+								<p:autoComplete placeholder="Destination"
+									style="background-color:transparent!important;"
+									completeMethod="#{bidHandler.filteredDestinationList}"
+									value="#{bidHandler.filterBean.destination}" maxResults="5"
+									minQueryLength="1">
+									<p:ajax event="itemSelect"></p:ajax>
+									<p:ajax event="change"></p:ajax>
+								</p:autoComplete>
+							</p:outputPanel>
+							<p:outputPanel styleClass="origi-desti-metro">
+								<p:outputLabel>
+									<b>Origin Metro Area</b>
+								</p:outputLabel>
+								<p:inputText id="o-metro-area"
+									value="#{bidHandler.filterBean.originMetroArea}"></p:inputText>
+							</p:outputPanel>
+							<p:outputPanel styleClass="origi-desti-metro">
+								<p:outputLabel>
+									<b>Destination Metro Area</b>
+								</p:outputLabel>
+								<p:inputText id="d-metro-area"
+									value="#{bidHandler.filterBean.destinationMetroArea}"></p:inputText>
+							</p:outputPanel>
+						</p:column>
+					</p:panelGrid>
+					<p:outputPanel styleClass="button-group">
+
+						<p:commandLink id="reset-btn" styleClass="reset-btn"
+							value="#{label.bid_filter_reset_filter}"
+							oncomplete="resetCarousalPage()"
+							actionListener="#{bidHandler.resetFilter()}"
+							update="@form :bidDetailsForm:lane-details-slider" />
+						<p:commandButton id="apply-btn"
+							styleClass="apply-btn ui-priority-primary"
+							oncomplete="resetCarousalPage()"
+							actionListener="#{bidHandler.applyFilter()}"
+							value="#{label.bid_filter_apply}"
+							update="@form :bidDetailsForm:lane-details-slider" />
+					</p:outputPanel>
+				</p:overlayPanel>
+
+			</p:outputPanel>
+			<!-- Filter Section Ends -->
+
+			<div class="clear"></div>
+
+			<p:layout fullPage="false" id="layout-bid" styleClass="layout-bid"
+				style="height:300px;">
+				<p:ajax event="toggle" oncomplete="toggleLayout();" />
+
+				<p:layoutUnit id="left-panel" styleClass="left-panel-layout"
+					position="west" header="#{label.bid_about}" resizable="false"
+					collapsible="true" size="14%" collapsed="true">
+					<p:outputPanel id="about-bid" styleClass="about-bid">
+
+						<p:messages id="aboutBidId" globalOnly="true" closable="true"
+							styleClass="messageInfo" rendered="#{bidHandler.aboutBidMessage}">
+							<!-- <p:effect type="fade" event="load" delay="5000" /> -->
+						</p:messages>
+
+						<p:commandLink value="#{label.bid_edit_btn}"
+							disabled="#{bidHandler.disableBidFields}"
+							update=":bidDetailsForm:manger-email @(.about-bid)"
+							id="edit-bid-btn" styleClass="edit-bid-btn"
+							rendered="#{!bidHandler.editMode}" process="@this"
+							actionListener="#{bidHandler.toggleEditMode()}">
+						</p:commandLink>
+
+
+						<div class="edit-cancel-save">
+
+							<p:commandLink value="#{label.bid_cancel_btn}"
+								disabled="#{bidHandler.disableBidFields}" update="@(.about-bid)"
+								id="cancel-bid-btn" styleClass="cancel-bid-btn"
+								rendered="#{bidHandler.editMode}"
+								actionListener="#{bidHandler.toggleEditMode()}">
+								<p:ajax update="@(.about-bid)" resetValues="true" />
+							</p:commandLink>
+
+							<p:commandButton value="#{label.bid_save_btn}"
+								disabled="#{bidHandler.disableBidFields}"
+								update="@(.about-bid) bidDetailsForm:aboutBidId bidDetailsForm:about-bid"
+								rendered="#{bidHandler.editMode}" id="save-bid-btn"
+								styleClass="save-bid-btn ui-priority-primary"
+								actionListener="#{bidHandler.saveDetails()}" />
+
+						</div>
+
+
+						<p:remoteCommand name="saveDetails"
+							actionListener="#{bidHandler.saveDetails()}" />
+						<br />
+						<p:panelGrid styleClass="bid-panel-grid">
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_req_on}" /></b>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<div class="response-date">
+										<p:calendar id="calender-button_re"
+											styleClass="calender-button"
+											rendered="#{bidHandler.editMode}" pattern="MM/dd/yyyy"
+											mask="true"
+											placeholder="#{label.bid_place_holder_text_rr_due_dt}"
+											onfocus="$(this).mask('99/99/9999');return false;"
+											update="@(.about-bid) bidDetailsForm:aboutBidId"
+											value="#{bidHandler.bidDetails.reqOnDt}" showOn="button"
+											maxdate="#{bidHandler.maxDate}"
+											converterMessage="Please enter valid Requested Date" />
+									</div>
+									<h:outputText value="#{bidHandler.bidDetails.reqOnDt}"
+										rendered="#{not (bidHandler.editMode)}">
+										<f:convertDateTime pattern="MM/dd/yyyy" />
+									</h:outputText>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_req_res_due}" /></b>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<div class="response-date">
+										<p:calendar id="calender-button" styleClass="calender-button"
+											rendered="#{bidHandler.editMode}" pattern="MM/dd/yyyy"
+											mask="true"
+											onfocus="$(this).mask('99/99/9999');return false;"
+											placeholder="#{label.bid_place_holder_text_rr_due_dt}"
+											value="#{bidHandler.bidDetails.reqRespDueDt}" showOn="button" />
+									</div>
+									<p:outputLabel id="requested-response-due"
+										rendered="#{not (bidHandler.editMode)}"
+										value="#{bidHandler.bidDetails.reqRespDueDt}">
+										<f:convertDateTime pattern="MM/dd/yyyy" />
+									</p:outputLabel>
+
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText value="#{label.bid_vol}" /></b>
+								</p:column>
+							</p:row>
+							<p:row styleClass="sub-values">
+								<p:column style="width:70px;">
+									<p style="padding-top: 3px; float: left;">
+										<h:outputText value="#{label.bid_core}" />
+									</p>
+								</p:column>
+								<p:column style="padding:0 !important;">
+									<p:outputLabel style="padding-top:3px; float: left;"
+										value="#{bidHandler.bidDetails.reqCoreVol}" id="req_core_vol">
+										<f:convertNumber locale="en-US" />
+									</p:outputLabel>
+								</p:column>
+							</p:row>
+							<p:row styleClass="sub-values">
+								<p:column>
+									<h:outputText value="#{label.bid_if}" />
+								</p:column>
+								<p:column style="padding:0 !important;">
+									<p:outputLabel style="padding-top:3px; float: left;"
+										value="#{bidHandler.bidDetails.reqIfVol}" id="req_if_vol">
+										<f:convertNumber locale="en-US" />
+									</p:outputLabel>
+								</p:column>
+							</p:row>
+							<p:row styleClass="sub-values">
+								<p:column>
+									<h:outputText value="#{label.bid_total_req}" />
+								</p:column>
+								<p:column style="padding:0 !important;">
+									<p:outputLabel value="#{bidHandler.bidDetails.reqTotalVol}"
+										id="total_volume">
+										<f:convertNumber locale="en-US" />
+									</p:outputLabel>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_curr_renewal_rev}" /></b>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="#{bidHandler.bidDetails.currRenewalRev}">
+										<f:convertNumber minFractionDigits="0" currencySymbol="$"
+											type="currency" />
+									</h:outputText>
+								</p:column>
+							</p:row>
+
+
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_avg_contract_change}" /></b>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText
+										value="#{bidHandler.bidDetails.avgContractPerChang}">
+										<f:convertNumber maxFractionDigits="2" type="percent" />
+									</h:outputText>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_contribution}" /></b>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="#{bidHandler.bidDetails.contribution}">
+										<f:convertNumber minFractionDigits="0" currencySymbol="$"
+											type="currency" />
+									</h:outputText>
+								</p:column>
+							</p:row>
+
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_margin}" /></b>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="#{bidHandler.bidDetails.marginPercent}">
+										<f:convertNumber maxFractionDigits="2" type="percent" />
+									</h:outputText>
+								</p:column>
+							</p:row>
+
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_req_by}" /></b>
+								</p:column>
+							</p:row>
+							<p:row styleClass="sub-values" rendered="#{bidHandler.editMode}">
+								<p:column colspan="2">
+									<p:inputText style="width:100%; margin:8px 0; "
+										placeholder="#{label.bid_place_holder_text_req_name}"
+										value="#{bidHandler.bidDetails.requestorName}" />
+								</p:column>
+							</p:row>
+							<p:row styleClass="sub-values"
+								rendered="#{not (bidHandler.editMode)}">
+								<p:column colspan="2">
+									<p:outputLabel style="margin-top:3px; float:left;"
+										value="#{bidHandler.bidDetails.requestorName}" />
+								</p:column>
+							</p:row>
+							<p:row styleClass="sub-values">
+								<p:column colspan="2">
+									<p:inputText style="width:100%; margin-bottom:5px;"
+										placeholder="#{label.bid_place_holder_text_req_email}"
+										id="req-by-input" styleClass="req-by-email"
+										rendered="#{bidHandler.editMode}"
+										value="#{bidHandler.bidDetails.requestorEmail}" />
+									<p:outputLabel id="req-by-lbl" styleClass="req-by-lbl-email"
+										rendered="#{not (bidHandler.editMode)}"
+										value="#{bidHandler.bidDetails.requestorEmail}" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2" styleClass="sub-values">
+									<p:inputMask mask="(999)999-9999" style="width:100%;"
+										placeholder="#{label.bid_place_holder_text_req_phone}"
+										id="req-by-input-no" styleClass="req-by-input-no"
+										rendered="#{bidHandler.editMode}"
+										value="#{bidHandler.bidDetails.requestorPhone}" />
+									<p:outputLabel id="req-by-input-no-lbl"
+										styleClass="req-by-input-no-lbl"
+										rendered="#{not (bidHandler.editMode)}"
+										value="#{bidHandler.bidDetails.requestorPhone}" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_price_mgr}" /></b>
+								</p:column>
+							</p:row>
+							<p:row rendered="#{bidHandler.editMode}">
+								<p:column colspan="2">
+									<p:selectOneMenu id="p-mgr" converter="managerDetailConvertor"
+										value="#{bidHandler.bidDetails.pricingMgr}"
+										rendered="#{(bidHandler.editMode)}"
+										style="width:88%; margin-top:3px;">
+										<f:selectItems value="#{bidHandler.pricingMgrList}" var="mgr"
+											itemLabel="#{mgr.mgrName}" itemValue="#{mgr}" />
+										<p:ajax event="change" process="@this"
+											listener="#{bidHandler.onPricingManagerChange}"
+											update=":bidDetailsForm:pricing-manager-email :bidDetailsForm:manger-email" />
+									</p:selectOneMenu>
+								</p:column>
+							</p:row>
+							<p:row rendered="#{not(bidHandler.editMode)}">
+								<p:column colspan="2">
+									<p:outputLabel styleClass="pricing-mgr-email" style=" "
+										value="#{bidHandler.bidDetails.pricingMgr.mgrName}" />
+								</p:column>
+							</p:row>
+							<p:row rendered="#{bidHandler.editMode}">
+								<p:column colspan="2">
+									<p:outputLabel style="width:100%;" id="manger-email"
+										value="#{bidHandler.bidDetails.pricingMgr.mgrEmail}" />
+								</p:column>
+							</p:row>
+
+							<p:row styleClass="sub-values"
+								rendered="#{not(bidHandler.editMode)}">
+								<p:column colspan="2">
+									<p:outputLabel styleClass="pricing-mgr-email"
+										id="pricing-manager-email"
+										value="#{bidHandler.bidDetails.pricingMgr.mgrEmail}" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_sal_person}" /></b>
+								</p:column>
+							</p:row>
+							<p:row rendered="#{bidHandler.editMode}">
+								<p:column colspan="2">
+									<p:inputText style="width:100%;"
+										placeholder="#{label.bid_place_holder_text_csxt_sales_name}"
+										value="#{bidHandler.bidDetails.salesPrName}" />
+								</p:column>
+							</p:row>
+							<p:row rendered="#{not (bidHandler.editMode)}">
+								<p:column colspan="2">
+									<p:outputLabel value="#{bidHandler.bidDetails.salesPrName}" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<p:inputText style="width:100%;"
+										placeholder="#{label.bid_place_holder_text_csxt_sales_email}"
+										rendered="#{bidHandler.editMode}"
+										value="#{bidHandler.bidDetails.salesPrEmail}" />
+									<p:outputLabel style="margin-top:-5px; float:left;"
+										rendered="#{not (bidHandler.editMode)}"
+										value="#{bidHandler.bidDetails.salesPrEmail}" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><h:outputText
+											value="#{label.bid_commodity}" /></b>
+								</p:column>
+							</p:row>
+							<p:row>
+								<!-- <p:column colspan="2">
+                                                                                                                                                <p:outputLabel value="#{bidHandler.bidDetails.commodity}" />
+                                                                                                                                </p:column>-->
+								<p:column colspan="2">
+									<p:inputText style="width:100%;"
+										placeholder="#{label.bid_commodity}"
+										rendered="#{bidHandler.editMode}"
+										value="#{bidHandler.bidDetails.commodity}" />
+									<p:outputLabel style="margin-top:-3px; float:left;"
+										rendered="#{not (bidHandler.editMode)}"
+										value="#{bidHandler.bidDetails.commodity}" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><p:outputLabel
+											value="#{label.bid_biz_mov}" /></b>
+								</p:column>
+							</p:row>
+							<p:row>
+								<!--  <p:column colspan="2">
+                                                                                                                                                <p class="wordBreak">#{bidHandler.bidDetails.bizStatus}</p>
+                                                                                                                                </p:column>-->
+								<p:column colspan="2">
+									<p:inputText style="width:100%;"
+										rendered="#{bidHandler.editMode}"
+										value="#{bidHandler.bidDetails.bizStatus}" maxlength="100" />
+
+									<h:outputText
+										style="margin-top:-3px; float:left; word-wrap:break-word; white-space: pre-wrap;"
+										rendered="#{not (bidHandler.editMode)}"
+										value="#{bidHandler.bidDetails.bizStatus}" />
+
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<h:outputText value="" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column colspan="2">
+									<b class="headings"><p:outputLabel
+											value="#{label.bid_contract_type}" /></b>
+								</p:column>
+							</p:row>
+							<p:row rendered="#{not (bidHandler.editMode)}">
+								<p:column colspan="2">
+									<p:outputLabel value="#{bidHandler.bidDetails.contractType}" />
+								</p:column>
+							</p:row>
+							<p:row rendered="#{bidHandler.editMode}">
+								<p:column colspan="2">
+									<p:selectOneMenu styleClass="select-contract-type"
+										style="width:88%"
+										value="#{bidHandler.bidDetails.contractType}"
+										id="select-contract-type">
+										<f:selectItems value="#{bidHandler.contractTypeList}" />
+									</p:selectOneMenu>
+								</p:column>
+							</p:row>
+						</p:panelGrid>
+
+					</p:outputPanel>
+				</p:layoutUnit>
+				<p:layoutUnit position="center" size="86%" styleClass="detailDialog">
+					<p:outputLabel value="#{label.bid_filter_no_record}"
+						rendered="#{not (bidHandler.bidDetails.laneDetails.size()>0)}"
+						id="bid-lane-result" styleClass="bid-lane-result" />
+					<p:overlayPanel widgetVar="overlay" showEffect="blind"
+						id="overlayPopup" showCloseIcon="true" styleClass="lane-overlay"
+						dynamic="true" dismissable="true" hideEffect="blind">
+						<script>
+                                         $(document).ready(function(){
+                                             $(".closeIcon").click(function(){
+                                                 $(".lane-overlay").hide();
+                                             });
+                                         });
+                                        /*  function testingClose(){
+                                                 alert('testing');
+                                                 $(".closeIcon").click(function(){
+                                                 $(".lane-overlay").hide();
+                                             });
+                                         } */
+                                         </script>
+						<p:commandButton value="close" styleClass="closeIcon"
+							widgetVar="closeBtn" />
+
+						<h:form id="bidReportForm">
+
+
+							<p:outputLabel id="acc-header-imc-name"
+								rendered="#{bidHandler.selectedContractBean.currentIMC}"
+								styleClass="overlay-header"
+								value="#{bidHandler.selectedContractBean.imcName} Details" />
+
+							<p:outputLabel id="acc-header-imc-name-current"
+								rendered="#{not bidHandler.selectedContractBean.currentIMC}"
+								styleClass="overlay-header-default"
+								value="#{bidHandler.selectedContractBean.imcName} Details" />
+							<div class="clear"></div>
+							<p:accordionPanel id="bid-slide-panel" dynamic="true"
+								activeIndex="#{bidHandler.mainTab}" styleClass="bid-slide-panel">
+
+
+								<p:tab title="#{label.bid_lane_abt_imc}">
+
+
+									<p:outputPanel styleClass="style-two-column" id="abt-imc">
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_abt_imc_vol}</p:outputLabel>
+												<p:outputPanel styleClass="value-data"
+													rendered="#{bidHandler.selectedContractBean.currentIMC}">
+													<p:inputText id="imc-volume" styleClass="imc-volume"
+														value="#{bidHandler.selectedContractBean.volume}"
+														disabled="#{bidHandler.disableBidFields or bidHandler.IMCCardLane.award or bidHandler.selectedContractBean.awardedIMC}">
+														<p:ajax event="change"
+															listener="#{bidHandler.updateVolume()}" update="@this" />
+													</p:inputText>
+												</p:outputPanel>
+												<p:outputPanel styleClass="value-data"
+													rendered="#{not bidHandler.selectedContractBean.currentIMC}">
+													<p:outputLabel id="imc-volume-read-only"
+														styleClass="imc-volume"
+														value="#{bidHandler.selectedContractBean.volume}" />
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_abt_imc_rate}</p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<p:outputLabel value="$&amp;nbsp;" escape="false"
+														style="margin-top:6px; float:left;"></p:outputLabel>
+													<p:inputText id="imc-rate" styleClass="imc-rate"
+														value="#{bidHandler.selectedContractBean.currentRt}"
+														disabled="#{bidHandler.disableBidFields or bidHandler.selectedContractBean.disableVolumeAndRate or bidHandler.IMCCardLane.award or bidHandler.selectedContractBean.awardedIMC}">
+														<p:ajax event="change" update="@this"
+															listener="#{bidHandler.currentRateValueChangeFromIMCCard(bidHandler.selectedContractBean)}" />
+														<f:convertNumber minFractionDigits="0" />
+													</p:inputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_abt_imc_var}</p:outputLabel>
+												<!-- <p:outputPanel styleClass="value-data"  rendered = "#{bidHandler.selectedContractBean.variancePercent}">
+                                                                                                                                                                                                <font color="red">(
+                                                                                                                                                                                                                <p:outputLabel  styleClass="imc-volume"
+                                                                                                                                                                                                                                value="#{bidHandler.selectedContractBean.varPercent}">
+                                                                                                                                                                                                                                <f:convertNumber maxFractionDigits="2" type="percent"  />
+                                                                                                                                                                                                                </p:outputLabel>)
+                                                                                                                                                                                                </font>
+                                                                                                                                                                                                </p:outputPanel> -->
+												<p:outputPanel styleClass="value-data">
+													<p:outputLabel styleClass="imc-volume"
+														value="#{bidHandler.selectedContractBean.varPercent}"
+														style="#{bidHandler.selectedContractBean.varPercentStyle}">
+													</p:outputLabel>
+												</p:outputPanel>
+											</div>
+											<!-- <div class="col-left">
+                                                                                                                                                                                                <p:outputLabel>#{label.bid_lane_abt_imc_var}</p:outputLabel>
+                                                                                                                                                                                                <p:outputPanel styleClass="value-data"  >
+                                                                                                                                                                                                
+                                                                                                                                                                                                                <p:outputLabel  styleClass="imc-volume"
+                                                                                                                                                                                                                                value="#{bidHandler.selectedContractBean.varPercent}">
+                                                                                                                                                                                                                                <f:convertNumber maxFractionDigits="2" type="percent"  />
+                                                                                                                                                                                                                </p:outputLabel>
+                                                                                                                                                                
+                                                                                                                                                                                                
+                                                                                                                                                                                </div> -->
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_abt_imc_req_rt}</p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<p:outputLabel id="imc-rate-req" styleClass="imc-rate"
+														value="#{bidHandler.selectedContractBean.reqRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</p:outputLabel>
+												</p:outputPanel>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_abt_imc_core_vol}</p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText styleClass="core-vol-bidder"
+														id="core-vol-bidder"
+														value="#{bidHandler.selectedContractBean.imcData.coreVol}">
+														<f:convertNumber locale="en-US" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_abt_imc_agree_num}</p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+                                                                                                                                                    #{bidHandler.selectedContractBean.imcData.agreementNum}
+                                                                                                                                                    </p:outputPanel>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_abt_imc_if_vol}</p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.imcData.ifVol}"
+														styleClass="core-if-vol-bidder" id="core-if-vol-bidder">
+														<f:convertNumber locale="en-US" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+
+												<p:outputLabel>#{label.bid_lane_abt_imc_exp_dt}</p:outputLabel>
+
+												<p:outputPanel styleClass="value-data">
+													<h:outputText styleClass="exp-dt-bidder" id="exp-dt-bidder"
+														value="#{bidHandler.selectedContractBean.imcData.expireDt}">
+														<f:convertDateTime pattern="MM/dd/yyyy" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_abt_imc_total_vol}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.imcData.agrtTotalVol}"
+														id="imc-total-vol" styleClass="imc-total-vol">
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_abt_imc_eff_dt}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText styleClass="eff-dt-bidder" id="eff-dt-bidder"
+														value="#{bidHandler.selectedContractBean.imcData.effectiveDt}">
+														<f:convertDateTime pattern="MM/dd/yyyy" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+									</p:outputPanel>
+								</p:tab>
+
+
+
+
+								<p:tab title="#{label.bid_lane_renewal_info}"
+									rendered="#{bidHandler.selectedContractBean.renewal or bidHandler.selectedContractBean.showIcon}">
+
+
+
+									<p:outputPanel styleClass="style-two-column" id="renew-info">
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_renewal_vs}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data"
+													rendered="#{bidHandler.selectedContractBean.renewalInfo.varianceApdixStatus}">
+													<font color="red"> <h:outputText
+															value="#{bidHandler.selectedContractBean.renewalInfo.varVal}">
+															<f:convertNumber minFractionDigits="0" currencySymbol="$"
+																type="currency" />
+														</h:outputText>
+													</font>
+												</p:outputPanel>
+
+												<p:outputPanel styleClass="value-data"
+													rendered="#{not(bidHandler.selectedContractBean.renewalInfo.varianceApdixStatus)}">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.renewalInfo.varVal}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_renewal_var}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.renewalInfo.varPercent}"
+														style="#{bidHandler.selectedContractBean.renewalInfo.varPercentStyle}">
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_renewal_twl_mon_vol}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.renewalInfo.twlMonthVol}">
+														<f:convertNumber locale="en-US" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_renewal_twl_mon_rt}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.renewalInfo.twlMonthRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_renewal_ttl_ra_vol}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.renewalInfo.totalRAVol}">
+														<f:convertNumber locale="en-US" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+
+
+									</p:outputPanel>
+
+
+								</p:tab>
+
+
+
+
+								<p:tab title="#{label.bid_lane_offer_history}">
+									<p:panelGrid id="offer-info" styleClass="lane-overlay-table">
+										<p:row styleClass="table-head">
+											<p:column>#{label.bid_lane_rnd_num}</p:column>
+											<p:column>#{label.bid_lane_offer_num}</p:column>
+											<p:column>#{label.bid_lane_offer_req_vol}</p:column>
+											<p:column>#{label.bid_lane_offer_req_rt}</p:column>
+											<p:column>#{label.bid_lane_offer_master_rt}</p:column>
+											<p:column>#{label.bid_lane_offer_renewal_rt}</p:column>
+											<p:column>#{label.bid_lane_offer_curr_rt}</p:column>
+											<p:column>#{label.bid_lane_offer_start}</p:column>
+											<p:column>#{label.bid_lane_offer_exp}</p:column>
+											<p:column>#{label.bid_lane_offer_link}</p:column>
+										</p:row>
+										<ui:repeat var="offer"
+											value="#{bidHandler.selectedContractBean.offerHistory}">
+											<p:row>
+												<p:column>
+													<h:outputText value="#{offer.rndNumber}" />
+												</p:column>
+												<p:column>#{offer.iterationNumber}</p:column>
+												<p:column>
+													<h:outputText value="#{offer.reqVol}">
+													</h:outputText>
+												</p:column>
+												<p:column>
+													<h:outputText value="#{offer.reqRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:column>
+
+												<p:column>
+													<h:outputText value="#{offer.masterRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:column>
+
+												<p:column>
+													<h:outputText value="#{offer.renewalRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:column>
+
+												<p:column>
+													<h:outputText value="#{offer.currentRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:column>
+												<p:column>
+													<h:outputText value="#{offer.startDt}">
+														<f:convertDateTime pattern="MM/dd/yy" />
+													</h:outputText>
+												</p:column>
+												<p:column>
+													<h:outputText value="#{offer.expireDt}">
+														<f:convertDateTime pattern="MM/dd/yy" />
+													</h:outputText>
+												</p:column>
+												<p:column>
+													<p:commandLink id="offer-view" styleClass="offer-view"
+														value="#{label.bid_lane_offer_link_view}"
+														oncomplete="setSelBeanId('#{offer.docName}')">
+
+													</p:commandLink>
+
+												</p:column>
+
+											</p:row>
+										</ui:repeat>
+									</p:panelGrid>
+								</p:tab>
+
+								<p:tab title="#{label.bid_lane_revenue}">
+
+
+
+
+									<p:outputPanel styleClass="style-two-column" id="revenue-info">
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_revenue_avg_rpu}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.revenue.rpuAvg}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_revenue_ltv_cost}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.revenue.ltvCost}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+
+
+										<div class="row">
+											<div class="col-left">
+
+
+												<p:outputLabel>#{label.bid_lane_revenue_adj_rpu}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.revenue.rpuAdjAvg}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_revenue_count_moves}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.revenue.costedMovs}">
+														<f:convertNumber groupingUsed="true" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_revenue_curr_avg_rpu}</p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<!-- <p:outputLabel rendered="#{bidHandler.selectedContractBean.revenue.rpuCurrentAvg} gt 0">$</p:outputLabel> -->
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.revenue.rpuCurrentAvg}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_revenue_contribution}</p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.revenue.contribution}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_revenue_twl_mon}  </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.revenue.twlMonRevenue}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>
+												</p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+
+												</p:outputPanel>
+											</div>
+										</div>
+
+
+									</p:outputPanel>
+
+								</p:tab>
+
+								<p:tab title="#{label.bid_lane_per_diem}">
+
+
+
+
+									<div class="style-two-column" id="per-derm">
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_per_diem_origin_time}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.perDiem.originFTime}">
+														<f:convertNumber minFractionDigits="2" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_per_diem_dest_time}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.perDiem.destFTime}">
+														<f:convertNumber minFractionDigits="2" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_per_diem_total_time}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.perDiem.totalFTime}">
+														<f:convertNumber minFractionDigits="2" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_per_diem_round_up}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">#{bidHandler.selectedContractBean.perDiem.roundUp}
+                                                                                                                                                                                                </p:outputPanel>
+											</div>
+										</div>
+
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_per_diem_tw_dollar}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.perDiem.perDiem}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_per_diem_plus_renewal}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.perDiem.perDiemPlusR}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_per_diem_change}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data"
+													rendered="#{bidHandler.selectedContractBean.perDiem.perDiemChPercent lt 0}">
+													<font color="red"> (<h:outputText
+															value="#{bidHandler.selectedContractBean.perDiem.perDiemChPercent}">
+															<f:convertNumber maxFractionDigits="2" type="percent" />
+														</h:outputText>)
+													</font>
+												</p:outputPanel>
+
+												<p:outputPanel styleClass="value-data"
+													rendered="#{bidHandler.selectedContractBean.perDiem.perDiemChPercent ge 0}">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.perDiem.perDiemChPercent}">
+														<f:convertNumber maxFractionDigits="2" type="percent" />
+													</h:outputText>
+												</p:outputPanel>
+
+											</div>
+
+										</div>
+
+									</div>
+
+								</p:tab>
+
+								<p:tab title="#{label.bid_lane_pvt_assets}">
+
+									<p:panelGrid id="private-assets" styleClass="table-style">
+										<p:row styleClass="table-header">
+											<p:column>#{label.bid_lane_pvt_assets_name}</p:column>
+											<p:column>
+                                                                                                #{bidHandler.selectedContractBean.lastYear}
+                                                                                </p:column>
+											<p:column>
+                                                                                                #{bidHandler.selectedContractBean.currentYear}
+                                                                                </p:column>
+										</p:row>
+										<ui:repeat var="pa"
+											value="#{bidHandler.selectedContractBean.pvtAssets}">
+											<p:row>
+												<p:column>#{pa.pvtAssetName}</p:column>
+												<p:column>
+													<h:outputText value="#{pa.yr1Amt}">
+														<f:convertNumber minFractionDigits="0" />
+													</h:outputText>
+												</p:column>
+												<p:column>
+													<h:outputText value="#{pa.yr2Amt}">
+														<f:convertNumber minFractionDigits="0" />
+													</h:outputText>
+												</p:column>
+											</p:row>
+										</ui:repeat>
+										<p:row styleClass="colum-total">
+											<p:column>#{label.bid_lane_pvt_assets_total}</p:column>
+											<p:column>
+												<h:outputText
+													value="#{bidHandler.selectedContractBean.priorPATotal}">
+													<f:convertNumber minFractionDigits="0" />
+												</h:outputText>
+
+											</p:column>
+											<p:column>
+												<h:outputText
+													value="#{bidHandler.selectedContractBean.currentPATotal}">
+													<f:convertNumber minFractionDigits="0" />
+												</h:outputText>
+
+											</p:column>
+										</p:row>
+									</p:panelGrid>
+								</p:tab>
+
+								<p:tab title="#{label.bid_lane_historic_rates}">
+									<div class="style-two-column" id="h-rates">
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_historic_dynamic_rt_min}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.historyRates.minDynamicRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_historic_contract_rt_min}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.historyRates.minContractRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_historic_dynamic_rt_max}  </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.historyRates.maxDynamicRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_historic_contract_rt_max}  </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.historyRates.maxContractRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_historic_dynamic_rt_avg}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.historyRates.avgDynamicRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_historic_contract_rt_avg}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+													<h:outputText
+														value="#{bidHandler.selectedContractBean.historyRates.avgContractRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</p:outputPanel>
+											</div>
+										</div>
+
+									</div>
+
+								</p:tab>
+
+								<p:tab title="#{label.bid_lane_addl_info}">
+									<div class="style-two-column" id="add-info">
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_addl_info_origin_metro}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+                                                                                                                                                                                                                                #{bidHandler.selectedContractBean.additionalInfo.originMetro}
+                                                                                                                                                                                                </p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_addl_info_destination_metro}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+                                                                                                                                                                                                                                #{bidHandler.selectedContractBean.additionalInfo.destinationMetro}
+                                                                                                                                                                                                </p:outputPanel>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_addl_info_origin_state}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+                                                                                                                                                                                                                                #{bidHandler.selectedContractBean.additionalInfo.originState}
+                                                                                                                                                                                                </p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_addl_info_destination_state}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+                                                                                                                                                                                                                                #{bidHandler.selectedContractBean.additionalInfo.destinationState}
+                                                                                                                                                                                                </p:outputPanel>
+											</div>
+										</div>
+
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_addl_info_od}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+                                                                                                                                                                                                                #{bidHandler.selectedContractBean.additionalInfo.odMarket}
+                                                                                                                                                                                                </p:outputPanel>
+											</div>
+											<div class="col-right">
+												<p:outputLabel>#{label.bid_lane_addl_info_type}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data">
+                                                                                                                                                                                                                #{bidHandler.selectedContractBean.additionalInfo.laneType}
+                                                                                                                                                                                                </p:outputPanel>
+											</div>
+										</div>
+
+
+
+										<div class="row">
+											<div class="col-left">
+												<p:outputLabel>#{label.bid_lane_addl_info_text}
+                                                                                                                                                                                                </p:outputLabel>
+												<p:outputPanel styleClass="value-data"
+													style="margin-bottom:18px;">
+                                                                                                                                                                                                                #{bidHandler.selectedContractBean.additionalInfo.additionalInfo}
+                                                                                                                                                                                                </p:outputPanel>
+											</div>
+
+										</div>
+
+									</div>
+
+
+								</p:tab>
+
+								<p:tab title="#{label.bid_lane_interline}"
+									rendered="#{not(bidHandler.selectedContractBean.displayInterline)}">
+
+									<p:panelGrid id="interline" styleClass="table-style">
+										<p:row styleClass="table-header">
+											<p:column>#{label.bid_lane_interline_type}</p:column>
+											<p:column>#{label.bid_lane_interline_csxt}</p:column>
+											<p:column>#{label.bid_lane_interline_up}</p:column>
+										</p:row>
+										<p:row>
+											<p:column>#{label.bid_lane_interline_div}</p:column>
+											<p:column>
+												<h:outputText
+													value="#{bidHandler.selectedContractBean.interLine.csxtDivPercent}%">
+													<f:convertNumber maxFractionDigits="2" pattern="#0.00" />
+												</h:outputText>
+											</p:column>
+											<p:column>
+												<h:outputText
+													value="#{bidHandler.selectedContractBean.interLine.upDivPercent}%">
+													<f:convertNumber maxFractionDigits="2" pattern="#0.00" />
+												</h:outputText>
+											</p:column>
+										</p:row>
+										<p:row>
+											<p:column>#{label.bid_lane_interline_amt}</p:column>
+											<p:column>
+												<h:outputText
+													value="#{bidHandler.selectedContractBean.interLine.csxtAmt}">
+													<f:convertNumber minFractionDigits="0" currencySymbol="$"
+														type="currency" />
+												</h:outputText>
+											</p:column>
+											<p:column>
+												<h:outputText
+													value="#{bidHandler.selectedContractBean.interLine.upAmt}">
+													<f:convertNumber minFractionDigits="0" currencySymbol="$"
+														type="currency" />
+												</h:outputText>
+											</p:column>
+										</p:row>
+									</p:panelGrid>
+								</p:tab>
+
+
+
+							</p:accordionPanel>
+
+						</h:form>
+
+
+					</p:overlayPanel>
+
+					<p:messages id="lane-message-id" globalOnly="true" closable="true"
+						styleClass="messageInfo">
+						<!--  <p:effect type="fade" event="load" delay="5000" /> -->
+					</p:messages>
+
+					<p:carousel id="lane-details-slider" numVisible="5" pageLinks="0"
+						widgetVar="lane-slider-widget" binding="#{carousel}"
+						circular="false" breakpoint="300" responsive="true"
+						rendered="#{bidHandler.bidDetails.laneDetails.size()>0}"
+						styleClass="lane-details-slider LaneDetails"
+						value="#{bidHandler.bidDetails.laneDetails}" var="lane">
+
+
+
+						<p:panel id="orgin-detination-panel"
+							styleClass="orgin-detination-panel">
+
+							<p:outputPanel styleClass="lane-header">
+
+
+
+								<span class="orgin">#{lane.origin}</span>
+
+								<p:outputLabel id="text-to" styleClass="text-to" value="TO" />
+								<span class="destination">#{lane.destination}</span>
+
+								<p:outputLabel rendered="#{lane.interLineLane}" id="to-fro-icon"
+									styleClass="to-fro-icon"></p:outputLabel>
+
+								<div class="exclude-award">
+
+									<div class="pull-left">
+										<p:selectBooleanCheckbox id="exclude-bid"
+											styleClass="exclude-bid" value="#{lane.exclude}"
+											disabled="#{bidHandler.disableBidFields or lane.award}">
+											<p:ajax event="change"
+												listener="#{bidHandler.onIncludeExcludeChange(lane)}"
+												process="@this" update="@this" />
+										</p:selectBooleanCheckbox>
+										<h:outputText value="#{label.bid_exclude}" />
+										<h:outputText value="(No Service)"
+											rendered="#{!lane.serviceOffered}" />
+									</div>
+
+
+
+									<!-- <p:outputLabel id="award-bid" styleClass="award-bid" value="?"
+                                                                                                                                                rendered="#{lane.award}"></p:outputLabel> -->
+
+									<div class="pull-right">
+										<p:outputLabel id="award-bid" styleClass="award-bid" value=""
+											rendered="#{lane.award}"></p:outputLabel>
+										<h:outputText value="#{label.bid_award}"
+											rendered="#{lane.award}" />
+
+									</div>
+								</div>
+
+
+							</p:outputPanel>
+
+							<p:panel id="orgin-detination-panel-contact"
+								styleClass="orgin-detination-panel-contact">
+								<div class="contract-rates">
+									<div class="pull-left">
+										<p:outputLabel id="contract-key"
+											value="#{label.bid_master_offer}" styleClass="contract-key" />
+									</div>
+									<!-- create offer -->
+									<!-- <p:inputText value="#{lane.contractRt}" id="contract-val"
+                                                                                                                                                                styleClass="contract-val pull-right" style="width:60px; float:right;">
+                                                                                                                                                                <f:convertNumber minFractionDigits="0"/> 
+                                                                                                                                                
+                                                                                                                                                </p:inputText> -->
+									<!--  Changed for create offer -->
+									<p:inputText value="#{lane.masterRenewalOffer}"
+										id="contract-val" styleClass="contract-val pull-right"
+										style="width:60px; float:right;"
+										disabled="#{lane.disableMasterOffer or bidHandler.disableBidFields or lane.award }">
+										<f:convertNumber minFractionDigits="0" />
+										<p:ajax listener="#{bidHandler.onMasterOfferChange(lane)}"
+											process="@this"
+											update="@this lane-details-slider:#{carousel.rowIndex}:orgin-detination-panel" />
+									</p:inputText>
+									<p:outputLabel value="$&amp;nbsp;" escape="false"
+										styleClass="pull-right" style="margin-top:6px;"></p:outputLabel>
+
+								</div>
+
+								<!-- This is going to be repeated  -->
+								<p:outputPanel id="contract-index-panel">
+									<ui:repeat id="masterLanes" var="contractBidder"
+										value="#{lane.imcContractData}">
+										<p:panel id="contract-index" styleClass="contract-index"
+											rendered="#{(contractBidder.masterBiddingIMC)}">
+											<p:commandLink id="contractor-name-current" process="@this"
+												rendered="#{(not (bidHandler.filterBean.imcView eq 'Hide Renewals')) and (contractBidder.currentIMC)}"
+												style="background : #{contractBidder.currentIMC? '#FAE35C' :''}"
+												actionListener="#{bidHandler.setSelectedContractBean(contractBidder,lane.renewalRt, lane.contractRt,lane, carousel.rowIndex)}"
+												oncomplete="setOverlayPosition('slide#{contractBidder.hashCode()}','#{carousel.rowIndex}');PF('overlay').loadContents();"
+												styleClass="contractor-name slide#{contractBidder.hashCode()} yellow-bg-head"
+												value="#{contractBidder.imcName}">
+											</p:commandLink>
+											<p:commandLink id="contractor-name" process="@this"
+												rendered="#{not(contractBidder.currentIMC)}"
+												actionListener="#{bidHandler.setSelectedContractBean(contractBidder,lane.renewalRt, lane.contractRt,lane, carousel.rowIndex)}"
+												oncomplete="setOverlayPosition('slide#{contractBidder.hashCode()}','#{carousel.rowIndex}');PF('overlay').loadContents();"
+												styleClass="contractor-name slide#{contractBidder.hashCode()} yellow-bg-head"
+												value="#{contractBidder.imcName}">
+											</p:commandLink>
+											<p:outputPanel id="icon-change" styleClass="icon-refresh"
+												rendered="#{((not (bidHandler.filterBean.imcView eq 'Hide Renewals')) and (contractBidder.showIcon)) }" />
+											<p:outputPanel id="non-renewal-bidder"
+												styleClass="non-renewal-bidder"
+												rendered="#{not(contractBidder.currentIMC)}">
+												<!-- <em>R#{contractBidder.rndNumber}/O#{contractBidder.offerNumber}:</em> -->
+                                                                                                                                                                                  Req Vol  #{contractBidder.volume} • Req Rate #{' '} <h:outputText
+													value="#{contractBidder.reqRt}">
+													<f:convertNumber minFractionDigits="0" currencySymbol="$"
+														type="currency" />
+												</h:outputText>
+											</p:outputPanel>
+											<p:outputPanel id="non-renewal-bidder-curr"
+												styleClass="non-renewal-bidder-curr"
+												rendered="#{contractBidder.currentIMC and (not (bidHandler.filterBean.imcView eq 'Hide Renewals'))}">
+												<p:panelGrid id="current-biider-grid-non-renw"
+													styleClass="current-biider-grid bidderGrid">
+													<p:row>
+														<p:column colspan="3">
+															<em>R#{contractBidder.rndNumber}/O#{contractBidder.offerNumber}:</em>
+														</p:column>
+													</p:row>
+													<p:row>
+														<p:column>
+															<b>#{label.bid_lane_assets_req_vol}</b>
+														</p:column>
+														<p:column>
+															<b>#{label.bid_lane_assets_req_rt}</b>
+														</p:column>
+														<p:column>
+															<b>#{label.bid_lane_assets_curr_rt}test</b>
+														</p:column>
+													</p:row>
+													<p:row>
+														<p:column>
+															<p:inputText style="width:100%" id="current-biider-vol"
+																value="#{contractBidder.volume}"
+																rendered="#{contractBidder.currentIMC}"
+																disabled="#{bidHandler.disableBidFields or lane.award }">
+																<p:ajax event="change" update="@this"
+																	listener="#{bidHandler.currentVolumeChange(lane,contractBidder)}"
+																	process="@this" />
+																<f:convertNumber locale="en-US" />
+															</p:inputText>
+															<p:outputLabel style="width:100%" id="current-bider-vol"
+																value="#{contractBidder.volume}"
+																rendered="#{not(contractBidder.currentIMC)}">
+
+															</p:outputLabel>
+														</p:column>
+														<p:column>
+															<p:outputLabel id="current-biider-vol-rate"
+																value="#{contractBidder.reqRt}">
+																<f:convertNumber minFractionDigits="0"
+																	currencySymbol="$" type="currency" />
+															</p:outputLabel>
+														</p:column>
+														<p:column>
+															<p:outputLabel value="$&amp;nbsp;" escape="false"
+																styleClass="pull-left" style="margin-top:6px;"></p:outputLabel>
+															<p:remoteCommand id="tt" name="test" process="@this"
+																actionListener="#{bidHandler.currentRateValueChange(lane,contractBidder)}"
+																update="@this lane-details-slider:#{carousel.rowIndex}:renewal-index-panel lane-details-slider:#{carousel.rowIndex}:contract-index-panel lane-details-slider:#{carousel.rowIndex}:other-index-panel"></p:remoteCommand>
+															<h:inputText style="width:69%"
+																rendered="#{contractBidder.currentIMC}"
+																value="#{contractBidder.currentRt}" onchange="test()">
+
+															</h:inputText>
+															<!-- <p:inputText style="width:69%"
+                                                                                                                                                                                                                                                                id="current-bider-vol-current"
+                                                                                                                                                                                                                                                                value="#{contractBidder.currentRt}" rendered="#{not(contractBidder.currentIMC)}" disabled="#{bidHandler.disableBidFields or contractBidder.disableVolumeAndRate}" >
+                                                                                                                                                                                                                                                                <p:ajax event="change" process= "@this" update="@this lane-details-slider:#{carousel.rowIndex}:renewal-index-panel lane-details-slider:#{carousel.rowIndex}:contract-index-panel lane-details-slider:#{carousel.rowIndex}:other-index-panel" 
+                                                                                                                                                                                                                                                                listener="#{bidHandler.currentRateValueChange(lane,contractBidder)}" />
+                                                                                                                                                                                                                                                                <f:convertNumber minFractionDigits="0"
+                                                                                                                                                                                                                                                                                />
+                                                                                                                                                                                                                                                </p:inputText> -->
+														</p:column>
+													</p:row>
+												</p:panelGrid>
+												<p:outputLabel styleClass="imc-volume"
+													rendered="#{contractBidder.renewalIMC or contractBidder.showIcon}">
+													<div class="grey-notify-text">
+														Var
+														<p:outputLabel styleClass="imc-volume"
+															value="#{contractBidder.varPercent}"
+															style="#{contractBidder.varPercentStyle}">
+														</p:outputLabel>
+														#{label.bid_column} 12 mo Vol -
+														#{contractBidder.twlMonthVol} #{label.bid_column} 12 mo
+														Rate -
+														<p:outputLabel value="#{contractBidder.twlMonthRate}"
+															id="twl-mon-rate-moddify" styleClass="twl-mon-rate">
+															<f:convertNumber minFractionDigits="0" currencySymbol="$"
+																type="currency" />
+														</p:outputLabel>
+													</div>
+												</p:outputLabel>
+												<p:panel id="lane-fb-accept-undo"
+													styleClass="lane-fb-accept-undo"
+													rendered="#{lane.fbReceived}">
+													<p:outputPanel id="fb-section"
+														style="display:#{contractBidder.fbAccepted ? 'block':'none'}"
+														styleClass="fb-section-#{contractBidder.hashCode()} fb-received-section feedback-toggler#{carousel.rowIndex}">
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-taken"
+																id="fb-section-text-fb-taken">#{label.bid_lane_feedback_accepted}</p:outputPanel>
+														</p>
+														<p>
+															<p:outputPanel styleClass="fb-section-text-prv-rt"
+																id="fb-section-text-prv-rt">#{label.bid_lane_prv_rt} <p:outputLabel
+																	id="fb-current-rt" value="#{contractBidder.undoRate}">
+																	<f:convertNumber minFractionDigits="0"
+																		currencySymbol="$" type="currency" />
+																</p:outputLabel>
+															</p:outputPanel>
+														</p>
+														<p>
+															<p:commandButton id="fb-section-undo-btn"
+																styleClass="fb-section-undo-btn"
+																value="#{label.bid_lane_undo_btn}" process="@this"
+																update="@this lane-details-slider:#{carousel.rowIndex}:orgin-detination-panel"
+																actionListener="#{contractBidder.toggleFbAccepted()}"></p:commandButton>
+														</p>
+													</p:outputPanel>
+
+													<p:outputPanel id="accept-fb-section"
+														style="display:#{contractBidder.fbAccepted ? 'none':'block'}"
+														styleClass="fb-section-#{contractBidder.hashCode()} accept-fb-received-section feedback-toggler#{carousel.rowIndex}">
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-accept"
+																id="fb-section-text-fb-accept">#{label.bid_lane_fb_lbl}</p:outputPanel>
+														</p>
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-rt"
+																id="fb-section-text-fb-rt-b">#{contractBidder.fbUnits} #{label.bid_lane_fb_units} <p:outputLabel
+																	id="fb-current-rt-b" value="#{contractBidder.fbRate}">
+																	<f:convertNumber minFractionDigits="0"
+																		currencySymbol="$" type="currency" />
+																</p:outputLabel>
+															</p:outputPanel>
+														</p>
+														<p>
+															<p:commandButton id="fb-section-accept-btn"
+																styleClass="fb-section-accept-btn"
+																value="#{label.bid_lane_accept_btn}" process="@this"
+																update="@this lane-details-slider:#{carousel.rowIndex}:orgin-detination-panel"
+																actionListener="#{contractBidder.feedbackUploaded}"></p:commandButton>
+														</p>
+													</p:outputPanel>
+												</p:panel>
+												<!-- <div class="grey-notify-text">
+                                                                                                                                                                                                                Var
+                                                                                                                                                                                                                <p:outputLabel id="imc-var-3" styleClass="imc-volume"
+                                                                                                                                                                                                                                value="#{contractBidder.varPercent}">
+                                                                                                                                                                                                                                <f:convertNumber maxFractionDigits="2" type="percent" />
+                                                                                                                                                                                                                </p:outputLabel>
+                                                                                                                                                                                                                #{label.bid_column} 12 mo Vol -
+                                                                                                                                                                                                                #{contractBidder.twlMonthVol} #{label.bid_column} 12 mo
+                                                                                                                                                                                                                Rate -
+                                                                                                                                                                                                                <p:outputLabel value="#{contractBidder.twlMonthRate}"
+                                                                                                                                                                                                                                id="twl-mon-rate-moddify" styleClass="twl-mon-rate">
+                                                                                                                                                                                                                                <f:convertNumber minFractionDigits="0" currencySymbol="$"
+                                                                                                                                                                                                                                                type="currency" />
+                                                                                                                                                                                                                </p:outputLabel>
+                                                                                                                                                                                                </div> -->
+
+											</p:outputPanel>
+										</p:panel>
+									</ui:repeat>
+								</p:outputPanel>
+							</p:panel>
+
+
+							<p:panel id="orgin-detination-panel-Renewal"
+								styleClass="orgin-detination-panel-Renewal">
+								<b class="pull-left"><p:outputLabel id="renewals-key"
+										value="#{label.bid_renewal}" /></b>
+								<p:dataTable id="input-renewal#{lane.hashCode()}"
+									styleClass="renewal-edit-input"
+									value="#{bidHandler.getListOne()}" editable="true"
+									editMode="cell">
+									<p:column>
+										<p:cellEditor>
+											<f:facet name="output">
+												<p:outputLabel value="$&amp;nbsp;" escape="false"></p:outputLabel>
+												<h:outputText value="#{lane.renewalRt}" style="width:69%">
+													<f:convertNumber minFractionDigits="0" />
+												</h:outputText>
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="modelInput" value="#{lane.renewalRt}"
+													styleClass="contract-val pull-right"
+													disabled="#{lane.disableRenewalOffer or bidHandler.disableBidFields or lane.award}"
+													style="width:60px!important; height:24px!important; padding:1px 3px!important; float:right;">
+													<f:convertNumber minFractionDigits="0" />
+													<p:ajax event="change" process="@this"
+														update="@this lane-details-slider:#{carousel.rowIndex}:renewal-index-panel lane-details-slider:#{carousel.rowIndex}:contract-index-panel lane-details-slider:#{carousel.rowIndex}:other-index-panel overlayPopup "
+														listener="#{bidHandler.inputRenewalRtChange(lane)}" />
+												</p:inputText>
+												<p:outputLabel value="$&amp;nbsp;" escape="false"
+													styleClass="pull-right"
+													style="float:right; margin-top:6px;" />
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+								</p:dataTable>
+								<!-- This is going to be repeated  this is for renewal -->
+								<p:outputPanel id="renewal-index-panel">
+									<ui:repeat var="contractBidder" value="#{lane.imcContractData}">
+										<p:panel id="renewal-index"
+											rendered="#{contractBidder.renewalBiddingIMC}"
+											styleClass="renewal-index contract-index">
+											<p:commandLink id="renewal-contractor-name" process="@this"
+												oncomplete="setOverlayPosition('slide#{contractBidder.hashCode()}','#{carousel.rowIndex}');PF('overlay').loadContents();"
+												actionListener="#{bidHandler.setSelectedContractBean(contractBidder,lane.renewalRt, lane.contractRt,lane, carousel.rowIndex)}"
+												style="background : #{contractBidder.currentIMC? '#FAE35C' :''}"
+												styleClass="renewal-contractor-name contractor-name slide#{contractBidder.hashCode()}  overlay yellow-bg-head"
+												value="#{contractBidder.imcName}" />
+											<!-- <p:outputPanel id="icon-change" styleClass="icon-refresh"
+                                                                                                                                                                                                rendered="#{(contractBidder.showIcon) and (contractBidder.currentIMC)}" />  -->
+											<p:outputPanel id="icon-change" styleClass="icon-refresh"
+												rendered="#{contractBidder.showIcon}" />
+
+											<p:outputPanel id="not-current-biider"
+												styleClass="not-current-biider non-renewal-bidder"
+												rendered="#{not(contractBidder.currentIMC)}">
+												<div class="rate-volume">
+													<em>R#{contractBidder.rndNumber}/O#{contractBidder.offerNumber}:</em>
+													Req Vol #{contractBidder.volume} • Req Rate #{' '}
+													<h:outputText value="#{contractBidder.reqRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</div>
+
+
+												<div class="grey-notify-text">
+													Var
+													<!-- <font color="red">(<p:outputLabel styleClass="imc-volume"
+                                                                                                                                                                                                                                value="#{contractBidder.varPercent}" rendered = "#{contractBidder.variancePercent}">
+                                                                                                                                                                                                                                <f:convertNumber maxFractionDigits="2" type="percent" />
+                                                                                                                                                                                                                </p:outputLabel>)
+                                                                                                                                                                                                                </font>  -->
+													<p:outputLabel styleClass="imc-volume"
+														value="#{contractBidder.varPercent}"
+														style="#{contractBidder.varPercentStyle}">
+													</p:outputLabel>
+													<!--         <p:outputLabel styleClass="imc-volume"
+                                                                                                                                                                                                                                value="#{contractBidder.variancePercent}" >
+                                                                                                                                                                                                                                
+                                                                                                                                                                                                                </p:outputLabel> -->
+													#{label.bid_column} 12 mo Vol -
+													#{contractBidder.twlMonthVol} #{label.bid_column} 12 mo
+													Rate -
+
+													<p:outputLabel value="#{contractBidder.twlMonthRate}"
+														id="twl-mon-rate" styleClass="twl-mon-rate">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</p:outputLabel>
+												</div>
+											</p:outputPanel>
+
+											<p:outputPanel id="current-biider"
+												styleClass="current-biider"
+												rendered="#{contractBidder.currentIMC}">
+
+
+												<p:panelGrid id="current-biider-grid"
+													styleClass="current-biider-grid">
+													<p:row>
+														<p:column colspan="3">
+															<em>R#{contractBidder.rndNumber}/O#{contractBidder.offerNumber}:</em>
+														</p:column>
+													</p:row>
+													<p:row>
+														<p:column>
+															<b>#{label.bid_lane_assets_req_vol}</b>
+														</p:column>
+														<p:column>
+															<b>#{label.bid_lane_assets_req_rt}</b>
+														</p:column>
+														<p:column>
+															<b>#{label.bid_lane_assets_curr_rt}</b>
+														</p:column>
+													</p:row>
+
+													<p:row>
+														<p:column>
+															<p:inputText style="width:100%" id="current-biider-vol"
+																value="#{contractBidder.volume}"
+																disabled="#{bidHandler.disableBidFields or contractBidder.disableVolumeAndRate or lane.award}">
+																<p:ajax event="change" process="@this" update="@this"
+																	listener="#{bidHandler.currentVolumeChange(lane,contractBidder)}" />
+																<f:convertNumber locale="en-US" />
+															</p:inputText>
+														</p:column>
+														<p:column>
+															<p:outputLabel id="current-biider-vol-rate"
+																value="#{contractBidder.reqRt}">
+																<f:convertNumber minFractionDigits="0"
+																	currencySymbol="$" type="currency" />
+															</p:outputLabel>
+														</p:column>
+														<p:column>
+															<p:outputLabel value="$&amp;nbsp;" escape="false"
+																style="float:left;margin-top:6px;"></p:outputLabel>
+															<p:inputText style="width:69%"
+																disabled="#{bidHandler.disableBidFields or contractBidder.disableVolumeAndRate or lane.award}"
+																id="current-biider-vol-current"
+																value="#{contractBidder.currentRt}">
+																<p:ajax event="change"
+																	update="@this lane-details-slider:#{carousel.rowIndex}:renewal-index-panel lane-details-slider:#{carousel.rowIndex}:contract-index-panel lane-details-slider:#{carousel.rowIndex}:other-index-panel"
+																	listener="#{bidHandler.currentRateValueChange(lane,contractBidder)}" />
+																<f:convertNumber minFractionDigits="0" />
+															</p:inputText>
+														</p:column>
+													</p:row>
+
+												</p:panelGrid>
+												<p:panel id="lane-fb-accept-undo"
+													styleClass="lane-fb-accept-undo"
+													rendered="#{lane.fbReceived}">
+													<p:outputPanel id="fb-section"
+														style="display:#{contractBidder.fbAccepted ? 'block':'none'}"
+														styleClass="fb-section-#{contractBidder.hashCode()} fb-received-section feedback-toggler#{carousel.rowIndex}">
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-taken"
+																id="fb-section-text-fb-taken">#{label.bid_lane_feedback_accepted}</p:outputPanel>
+														</p>
+														<p>
+															<p:outputPanel styleClass="fb-section-text-prv-rt"
+																id="fb-section-text-prv-rt">#{label.bid_lane_prv_rt} <p:outputLabel
+																	id="fb-current-rt" value="#{contractBidder.undoRate}">
+																	<f:convertNumber minFractionDigits="0"
+																		currencySymbol="$" type="currency" />
+																</p:outputLabel>
+															</p:outputPanel>
+														</p>
+														<p>
+															<p:commandButton id="fb-section-undo-btn"
+																styleClass="fb-section-undo-btn"
+																value="#{label.bid_lane_undo_btn}"
+																update="@this lane-details-slider:#{carousel.rowIndex}:orgin-detination-panel"
+																actionListener="#{contractBidder.toggleFbAccepted()}"
+																process="@this"></p:commandButton>
+														</p>
+													</p:outputPanel>
+
+													<p:outputPanel id="accept-fb-section"
+														style="display:#{contractBidder.fbAccepted ? 'none':'block'}"
+														styleClass="fb-section-#{contractBidder.hashCode()} accept-fb-received-section feedback-toggler#{carousel.rowIndex}">
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-accept"
+																id="fb-section-text-fb-accept">#{label.bid_lane_fb_lbl}</p:outputPanel>
+														</p>
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-rt"
+																id="fb-section-text-fb-rt-c">#{contractBidder.fbUnits} #{label.bid_lane_fb_units} <p:outputLabel
+																	id="fb-current-rt-c" value="#{contractBidder.fbRate}">
+																	<f:convertNumber minFractionDigits="0"
+																		currencySymbol="$" type="currency" />
+																</p:outputLabel>
+															</p:outputPanel>
+														</p>
+														<p>
+															<p:commandButton id="fb-section-accept-btn"
+																styleClass="fb-section-accept-btn"
+																value="#{label.bid_lane_accept_btn}"
+																update="@this lane-details-slider:#{carousel.rowIndex}:orgin-detination-panel"
+																actionListener="#{contractBidder.feedbackUploaded}"
+																process="@this"></p:commandButton>
+														</p>
+													</p:outputPanel>
+												</p:panel>
+
+												<div class="grey-notify-text">
+													Var
+													<p:outputLabel styleClass="imc-volume"
+														value="#{contractBidder.varPercent}"
+														style="#{contractBidder.varPercentStyle}">
+													</p:outputLabel>
+													#{label.bid_column} 12 mo Vol -
+													#{contractBidder.twlMonthVol} #{label.bid_column} 12 mo
+													Rate -
+													<p:outputLabel value="#{contractBidder.twlMonthRate}"
+														id="twl-mon-rate-moddify" styleClass="twl-mon-rate">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</p:outputLabel>
+												</div>
+											</p:outputPanel>
+										</p:panel>
+									</ui:repeat>
+								</p:outputPanel>
+							</p:panel>
+
+							<p:panel id="orgin-detination-panel-Others"
+								styleClass="orgin-detination-panel-Renewal">
+								<!-- This is going to be repeated  this is for other which are not renewal and master -->
+								<div class="contract-rates">
+									<div class="pull-left">
+										<p:outputLabel id="others-contract-key" value="Others"
+											styleClass="contract-key" />
+									</div>
+								</div>
+								<p:outputPanel id="other-index-panel">
+									<ui:repeat var="contractBidder" value="#{lane.imcContractData}">
+										<p:panel id="others-index"
+											rendered="#{contractBidder.otherBiddingIMC}"
+											styleClass="renewal-index contract-index">
+											<p:commandLink id="others-contractor-name" process="@this"
+												oncomplete="setOverlayPosition('slide#{contractBidder.hashCode()}','#{carousel.rowIndex}');PF('overlay').loadContents();"
+												actionListener="#{bidHandler.setSelectedContractBean(contractBidder,lane.renewalRt, lane.contractRt,lane, carousel.rowIndex)}"
+												style="background : #{contractBidder.currentIMC? '#FAE35C' :''}"
+												styleClass="renewal-contractor-name contractor-name slide#{contractBidder.hashCode()}  overlay yellow-bg-head"
+												value="#{contractBidder.imcName}" />
+											<!-- <p:outputPanel id="icon-change" styleClass="icon-refresh"
+                                                                                                                                                                                                rendered="#{(contractBidder.showIcon) and (contractBidder.currentIMC)}" />  -->
+											<p:outputPanel id="others-icon-change"
+												styleClass="icon-refresh"
+												rendered="#{contractBidder.showIcon}" />
+
+											<p:outputPanel id="others-not-current-biider"
+												styleClass="not-current-biider non-renewal-bidder"
+												rendered="#{not(contractBidder.currentIMC)}">
+												<div class="rate-volume">
+													<em>R#{contractBidder.rndNumber}/O#{contractBidder.offerNumber}:</em>
+													Req Vol #{contractBidder.volume} • Req Rate #{' '}
+													<h:outputText value="#{contractBidder.reqRt}">
+														<f:convertNumber minFractionDigits="0" currencySymbol="$"
+															type="currency" />
+													</h:outputText>
+												</div>
+
+												<p:outputLabel styleClass="imc-volume"
+													rendered="#{contractBidder.renewalIMC}">
+													<div class="grey-notify-text">
+														Var
+														<!-- <font color="red">(<p:outputLabel styleClass="imc-volume"
+                                                                                                                                                                                                                                value="#{contractBidder.varPercent}" rendered = "#{contractBidder.variancePercent}">
+                                                                                                                                                                                                                                <f:convertNumber maxFractionDigits="2" type="percent" />
+                                                                                                                                                                                                                </p:outputLabel>)
+                                                                                                                                                                                                                </font>  -->
+														<p:outputLabel styleClass="imc-volume"
+															value="#{contractBidder.varPercent}"
+															style="#{contractBidder.varPercentStyle}">
+														</p:outputLabel>
+														<!--         <p:outputLabel styleClass="imc-volume"
+                                                                                                                                                                                                                                value="#{contractBidder.variancePercent}" >
+                                                                                                                                                                                                                                
+                                                                                                                                                                                                                </p:outputLabel> -->
+														#{label.bid_column} 12 mo Vol -
+														#{contractBidder.twlMonthVol} #{label.bid_column} 12 mo
+														Rate -
+
+														<p:outputLabel value="#{contractBidder.twlMonthRate}"
+															id="others-twl-mon-rate" styleClass="twl-mon-rate">
+															<f:convertNumber minFractionDigits="0" currencySymbol="$"
+																type="currency" />
+														</p:outputLabel>
+													</div>
+												</p:outputLabel>
+											</p:outputPanel>
+
+											<p:outputPanel id="others-current-biider"
+												styleClass="current-biider"
+												rendered="#{contractBidder.currentIMC}">
+
+
+												<p:panelGrid id="others-current-biider-grid"
+													styleClass="current-biider-grid">
+													<p:row>
+														<p:column colspan="3">
+															<em>R#{contractBidder.rndNumber}/O#{contractBidder.offerNumber}:</em>
+														</p:column>
+													</p:row>
+													<p:row>
+														<p:column>
+															<b>#{label.bid_lane_assets_req_vol}</b>
+														</p:column>
+														<p:column>
+															<b>#{label.bid_lane_assets_req_rt}</b>
+														</p:column>
+														<p:column>
+															<b>#{label.bid_lane_assets_curr_rt}</b>
+														</p:column>
+													</p:row>
+
+													<p:row>
+														<p:column>
+															<p:inputText style="width:100%"
+																id="others-current-biider-vol"
+																value="#{contractBidder.volume}"
+																disabled="#{bidHandler.disableBidFields or contractBidder.disableVolumeAndRate or lane.award}">
+																<p:ajax event="change" update="@this"
+																	listener="#{bidHandler.currentVolumeChange(lane,contractBidder)}"
+																	process="@this" />
+																<f:convertNumber locale="en-US" />
+															</p:inputText>
+														</p:column>
+														<p:column>
+															<p:outputLabel id="others-current-biider-vol-rate"
+																value="#{contractBidder.reqRt}">
+																<f:convertNumber minFractionDigits="0"
+																	currencySymbol="$" type="currency" />
+															</p:outputLabel>
+														</p:column>
+														<p:column>
+															<p:outputLabel value="$&amp;nbsp;" escape="false"
+																style="float:left;margin-top:6px;"></p:outputLabel>
+															<p:inputText style="width:69%"
+																disabled="#{bidHandler.disableBidFields or contractBidder.disableVolumeAndRate or lane.award}"
+																id="current-biider-vol-current"
+																value="#{contractBidder.currentRt}">
+																<p:ajax event="change"
+																	update="@this lane-details-slider:#{carousel.rowIndex}:renewal-index-panel lane-details-slider:#{carousel.rowIndex}:contract-index-panel lane-details-slider:#{carousel.rowIndex}:other-index-panel"
+																	listener="#{bidHandler.currentRateValueChange(lane,contractBidder)}"
+																	process="@this" />
+																<f:convertNumber minFractionDigits="0" />
+															</p:inputText>
+														</p:column>
+													</p:row>
+
+												</p:panelGrid>
+
+
+
+												<p:panel id="others-lane-fb-accept-undo"
+													styleClass="lane-fb-accept-undo"
+													rendered="#{lane.fbReceived}">
+													<p:outputPanel id="others-fb-section"
+														style="display:#{contractBidder.fbAccepted ? 'block':'none'}"
+														styleClass="fb-section-#{contractBidder.hashCode()} fb-received-section feedback-toggler#{carousel.rowIndex}">
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-taken"
+																id="others-fb-section-text-fb-taken">#{label.bid_lane_feedback_accepted}</p:outputPanel>
+														</p>
+														<p>
+															<p:outputPanel styleClass="fb-section-text-prv-rt"
+																id="others-fb-section-text-prv-rt">#{label.bid_lane_prv_rt} <p:outputLabel
+																	id="others-fb-current-rt"
+																	value="#{contractBidder.undoRate}">
+																	<f:convertNumber minFractionDigits="0"
+																		currencySymbol="$" type="currency" />
+																</p:outputLabel>
+															</p:outputPanel>
+														</p>
+														<p>
+															<p:commandButton id="others-fb-section-undo-btn"
+																styleClass="fb-section-undo-btn"
+																value="#{label.bid_lane_undo_btn}"
+																update="@this lane-details-slider:#{carousel.rowIndex}:orgin-detination-panel"
+																actionListener="#{contractBidder.toggleFbAccepted()}"
+																process="@this"></p:commandButton>
+														</p>
+													</p:outputPanel>
+
+													<p:outputPanel id="others-accept-fb-section"
+														style="display:#{contractBidder.fbAccepted ? 'none':'block'}"
+														styleClass="fb-section-#{contractBidder.hashCode()} accept-fb-received-section feedback-toggler#{carousel.rowIndex}">
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-accept"
+																id="others-fb-section-text-fb-accept">#{label.bid_lane_fb_lbl}</p:outputPanel>
+														</p>
+														<p>
+															<p:outputPanel styleClass="fb-section-text-fb-rt"
+																id="others-fb-section-text-fb-rt-c">#{contractBidder.fbUnits} #{label.bid_lane_fb_units} <p:outputLabel
+																	id="others-fb-current-rt-c"
+																	value="#{contractBidder.fbRate}">
+																	<f:convertNumber minFractionDigits="0"
+																		currencySymbol="$" type="currency" />
+																</p:outputLabel>
+															</p:outputPanel>
+														</p>
+														<p>
+															<p:commandButton id="others-fb-section-accept-btn"
+																styleClass="fb-section-accept-btn"
+																value="#{label.bid_lane_accept_btn}"
+																update="@this lane-details-slider:#{carousel.rowIndex}:orgin-detination-panel"
+																actionListener="#{contractBidder.feedbackUploaded}"
+																process="@this"></p:commandButton>
+														</p>
+													</p:outputPanel>
+												</p:panel>
+												<p:outputLabel styleClass="imc-volume"
+													rendered="#{contractBidder.renewalIMC}">
+													<div class="grey-notify-text">
+														Var
+														<p:outputLabel styleClass="imc-volume"
+															value="#{contractBidder.varPercent}"
+															style="#{contractBidder.varPercentStyle}">
+														</p:outputLabel>
+														#{label.bid_column} 12 mo Vol -
+														#{contractBidder.twlMonthVol} #{label.bid_column} 12 mo
+														Rate -
+														<p:outputLabel value="#{contractBidder.twlMonthRate}"
+															id="others-twl-mon-rate-moddify"
+															styleClass="twl-mon-rate">
+															<f:convertNumber minFractionDigits="0" currencySymbol="$"
+																type="currency" />
+														</p:outputLabel>
+													</div>
+												</p:outputLabel>
+
+											</p:outputPanel>
+										</p:panel>
+									</ui:repeat>
+								</p:outputPanel>
+
+							</p:panel>
+							<p:outputPanel styleClass="rate-section">
+
+								<p:panelGrid id="renewals-blue-panel"
+									styleClass="rate-panel-grid">
+									<p:column>
+										<p:outputLabel styleClass="renewals-blue" id="renewals-blue"
+											value="#{label.bid_blue}" />
+									</p:column>
+									<p:column>
+										<h:outputText value="#{lane.blueRt}"
+											styleClass="renewals-blue-val">
+											<f:convertNumber minFractionDigits="0" currencySymbol="$"
+												type="currency" />
+										</h:outputText>
+									</p:column>
+								</p:panelGrid>
+								<p:panelGrid id="renewals-avg-panel" styleClass="rate-avg-grid">
+									<p:column>
+										<p:outputLabel styleClass="renewals-avg" id="renewals-avg"
+											value="#{label.bid_avg_rpu}" />
+									</p:column>
+									<p:column>
+										<h:outputText value="#{lane.rpuAvgRt}"
+											styleClass="renewals-blue-val-avg">
+											<f:convertNumber minFractionDigits="0" currencySymbol="$"
+												type="currency" />
+										</h:outputText>
+									</p:column>
+								</p:panelGrid>
+								<p:panelGrid id="renewals-dynamic-panel"
+									styleClass="rate-panel-grid">
+									<p:column>
+										<p:outputLabel styleClass="renewals-dynamic"
+											id="renewals-dynamic" value="#{label.bid_dynamic}" />
+									</p:column>
+									<p:column>
+										<h:outputText value="#{lane.dynamicRt}"
+											id="renewals-dynamic-val" styleClass="renewals-dynamic-val">
+											<f:convertNumber minFractionDigits="0" currencySymbol="$"
+												type="currency" />
+										</h:outputText>
+									</p:column>
+								</p:panelGrid>
+								<p:panelGrid id="renewals-s-contract-panel"
+									styleClass="rate-panel-grid">
+									<p:column>
+										<p:outputLabel styleClass="renewals-s-contract"
+											id="renewals-s-contract" value="#{label.bid_std_contract}" />
+									</p:column>
+									<p:column>
+										<h:outputText value="#{lane.stdContractRt}"
+											styleClass="renewals-s-contract-val">
+											<f:convertNumber minFractionDigits="0" currencySymbol="$"
+												type="currency" />
+										</h:outputText>
+									</p:column>
+								</p:panelGrid>
+								<p:panelGrid id="renewals-csxt-contract-panel"
+									styleClass="rate-panel-grid">
+									<p:row>
+										<p:column>
+											<p:outputLabel styleClass="renewals-csxt-contract"
+												id="renewals-csxt-contract"
+												value="#{label.bid_floor_contract}" />
+										</p:column>
+										<p:column>
+											<h:outputText value="#{lane.floorContractRt}"
+												id="renewals-csxt-contract-val"
+												styleClass="renewals-csxt-contract-val">
+												<f:convertNumber minFractionDigits="0" currencySymbol="$"
+													type="currency" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+								<p:panelGrid id="up-contract-floor-panel"
+									rendered="#{lane.laneType eq 'Interline Forwarded' or lane.laneType eq 'Interline Recieved' }"
+									styleClass="rate-panel-grid">
+									<p:row>
+										<p:column>
+											<!-- need to see -->
+											<ui:param name="currentIMC"
+												value="#{bidHandler.getCurrentIMC(lane.imcContractData)}" />
+
+											<p:commandLink
+												oncomplete="setOverlayPosition('slide#{currentIMC.hashCode()}a','#{carousel.rowIndex}');PF('overlay').loadContents();"
+												actionListener="#{bidHandler.setSelectedContractBean(currentIMC,lane.renewalRt, lane.contractRt,lane, carousel.rowIndex)}"
+												styleClass="up-contract-floor slide#{currentIMC.hashCode()}a  overlay"
+												id="up-contract-floor"
+												value="#{label.bid_up_floor_contract}">
+												<f:param name="upcontract" value="UPContractFloor" />
+											</p:commandLink>
+										</p:column>
+										<p:column>
+											<h:outputText id="up-contract-floor-val"
+												value="#{lane.upFloorContractRt}"
+												styleClass="up-contract-floor-val">
+												<f:convertNumber minFractionDigits="0" currencySymbol="$"
+													type="currency" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:outputPanel>
+						</p:panel>
+					</p:carousel>
+				</p:layoutUnit>
+			</p:layout>
+
+			<ui:include src="/pages/bid/create-bid-offer-dialog.xhtml"></ui:include>
+			<ui:include src="/pages/bid/award-lanes-dialog.xhtml"></ui:include>
+		</h:form>
+		<ui:include src="/pages/bid/upload-feedback-dialog.xhtml"></ui:include>
+		<h:form id="formId" target="tframe">
+			<h:inputHidden id="beaneId" name="#{userBean.selectedBean}" />
+			<h:commandButton id="exportExl" style="visibility: hidden;"
+				value="submit" actionListener="#{userBean.viewECMDocument}" />
+		</h:form>
+		<iframe id="tframe" name="tframe" style="width: 100%; height: 0px;"></iframe>
+		<ui:include src="/pages/bid/add-lanes.xhtml"></ui:include>
+	</ui:define>
+</ui:composition>

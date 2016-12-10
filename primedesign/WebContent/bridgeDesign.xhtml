@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+ <h:head>
+ <style>
+ 
+ .stripe-6 {
+  color: black;
+  width:300px;
+  background: repeating-linear-gradient(
+    to right,
+    #f6ba52,
+    #f6ba52 10px,
+    #ffd180 10px,
+    #ffd180 20px
+  );
+ 
+/*  div {
+  width:50px;
+  height:50px; 
+  border:1px solid black;
+  position:relative;
+  text-align:center;
+  line-height:50px;
+  font-size:25px;
+} */
+.vertical_line{height:150px; width:1px;background:#000;}
+ 
+ </style>
+ 
+ </h:head>
+ <h:body>
+
+<div style="width:50px;height: 250px;border: solid;border-left: white;padding-left: 20px;display: inline-block;"/>
+<div style="display:inline-block;width:100%;">
+  <table style="width:80%;text-align:center;"   >
+		<ui:repeat var="data" value="#{studentService.studentList}">
+			<tr>
+				<td>
+					<div style="width: 50px; height: 50px; border: solid black;">
+						<div
+							style="width: 25px; height: 25px; border-style: dotted; padding: 5px; margin: 3px;">
+							<hr style="width: 500px;"></hr>
+						</div>
+					</div>
+				</td>
+				<td>
+					<div style="width: 50px; height: 50px; border: solid black;">
+						<div
+							style="width: 25px; height: 25px; border-style: dotted; padding: 5px; margin: 3px;">
+							<hr style="width: 500px;"></hr>
+						</div>
+					</div>
+				</td>
+				<td>
+					<div style="width: 50px; height: 50px; border: solid black;">
+						<div
+							style="width: 25px; height: 25px; border-style: dotted; padding: 5px; margin: 3px;">
+							<hr style="width: 500px;"></hr>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</ui:repeat>
+	</table>
+ 
+ 
+<table style="width:80%;text-align:center;" align="center" >
+		<tr>
+		<ui:repeat var="data" value="#{studentService.studentList}">
+			<td>
+				<div style="width: 50px; height: 100px; border: solid black;">
+				</div>
+			</td>
+			</ui:repeat>
+		 		</tr>
+</table>
+ 
+  
+  </div>
+ <!-- <div style="width:50px;height: 250px;border: solid;border-left: white;padding-left: 20px;display: inline-block;"/> -->
+    
+   
+ </h:body>
+</html>
